@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>在Windows环境中使用Nginx, Consul, Consul Template搭建负载均衡和服务发现服务 | 斑驳记忆</title><meta name="keywords" content="consul,nginx"><meta name="author" content="Guo"><meta name="copyright" content="Guo"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="搭建负载均衡和服务发现服务的目的随着网站业务的不断提升，单个服务器的性能越来越难满足客户的业务需求，所以很多情况下，需要使用多服务器实例和负载均衡器来满足业务需要。Nginx#什么是Nginx#Nginx一款高性能的Web服务器，它既可以单独使用，也可以作为负载均衡器与其他Web服务器组合使用。  Nginx安装我们可用从Nginx官网上（ http:&#x2F;&#x2F;nginx.org&#x2F; ）下载最新的Wind">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Windows环境中使用Nginx, Consul, Consul Template搭建负载均衡和服务发现服务">
+<meta property="og:url" content="https://guochen2.github.io/2019/12/26/nginx/nginx-consul-2/index.html">
+<meta property="og:site_name" content="斑驳记忆">
+<meta property="og:description" content="搭建负载均衡和服务发现服务的目的随着网站业务的不断提升，单个服务器的性能越来越难满足客户的业务需求，所以很多情况下，需要使用多服务器实例和负载均衡器来满足业务需要。Nginx#什么是Nginx#Nginx一款高性能的Web服务器，它既可以单独使用，也可以作为负载均衡器与其他Web服务器组合使用。  Nginx安装我们可用从Nginx官网上（ http:&#x2F;&#x2F;nginx.org&#x2F; ）下载最新的Wind">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://guochen2.github.io/img/main/consul.png">
+<meta property="article:published_time" content="2019-12-26T11:15:59.000Z">
+<meta property="article:modified_time" content="2020-11-23T13:46:49.700Z">
+<meta property="article:author" content="Guo">
+<meta property="article:tag" content="consul">
+<meta property="article:tag" content="nginx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://guochen2.github.io/img/main/consul.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://guochen2.github.io/2019/12/26/nginx/nginx-consul-2/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1916c8f3ab2ecb2630f133a9b6ec0db9";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '在Windows环境中使用Nginx, Consul, Consul Template搭建负载均衡和服务发现服务',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2020-11-23 21:46:49'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="斑驳记忆" type="application/atom+xml">
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">Loading...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">38</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">32</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-comment"></i><span> Comment</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/main/consul.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">斑驳记忆</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/comment/"><i class="fa-fw fa fa-comment"></i><span> Comment</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">在Windows环境中使用Nginx, Consul, Consul Template搭建负载均衡和服务发现服务</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2019-12-26T11:15:59.000Z" title="Created 2019-12-26 19:15:59">2019-12-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2020-11-23T13:46:49.700Z" title="Updated 2020-11-23 21:46:49">2020-11-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/nginx/">nginx</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/nginx/consul/">consul</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>8min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="在Windows环境中使用Nginx, Consul, Consul Template搭建负载均衡和服务发现服务"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h4 id="搭建负载均衡和服务发现服务的目的"><a href="#搭建负载均衡和服务发现服务的目的" class="headerlink" title="搭建负载均衡和服务发现服务的目的"></a>搭建负载均衡和服务发现服务的目的</h4><p>随着网站业务的不断提升，单个服务器的性能越来越难满足客户的业务需求，所以很多情况下，需要使用多服务器实例和负载均衡器来满足业务需要。Nginx#什么是Nginx#Nginx一款高性能的Web服务器，它既可以单独使用，也可以作为负载均衡器与其他Web服务器组合使用。</p>
+<p><img src="/2019/12/26/nginx/nginx-consul-2/localimg11.png" alt="a"></p>
+<h3 id="Nginx安装"><a href="#Nginx安装" class="headerlink" title="Nginx安装"></a>Nginx安装</h3><p>我们可用从Nginx官网上（ <a target="_blank" rel="noopener" href="http://nginx.org/">http://nginx.org/</a> ）下载最新的Windows版本压缩包。压缩包解压之后目录结构如下：<br><img src="/2019/12/26/nginx/nginx-consul-2/nginxlocal.png" alt="a"></p>
+<h4 id="Nginx的配置"><a href="#Nginx的配置" class="headerlink" title="Nginx的配置"></a>Nginx的配置</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">events &#123;</span><br><span class="line">worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">upstream backend</span><br><span class="line">&#123;</span><br><span class="line">server 127.0.0.1:91 weight=1;</span><br><span class="line">server 127.0.0.1:92 weight=1;</span><br><span class="line">&#125;</span><br><span class="line">server</span><br><span class="line">&#123;</span><br><span class="line">location / &#123;</span><br><span class="line">proxy_pass http://backend;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中upstream部分定义了对于HTTP请求的负载均衡。 当用户发送请求到 <a target="_blank" rel="noopener" href="http://backend">http://backend</a> 的时候，Nginx会将这个请求转发到指定服务器IP列表中的一个。配置中的weight字段设置了指定服务器IP的权重，权重越高，转发的可能性越高。</p>
+<h4 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h4><p>Nginx默认会占用80端口，这个和IIS有冲突, 所以需要在nginx.conf中修改Nginx的默认端口</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">events &#123;</span><br><span class="line">worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">upstream backend</span><br><span class="line">&#123;</span><br><span class="line">server 127.0.0.1:92 weight=1;</span><br><span class="line">server 127.0.0.1:93 weight=1;</span><br><span class="line">&#125;</span><br><span class="line">server</span><br><span class="line">&#123;</span><br><span class="line">listen 81;</span><br><span class="line">server_name localhost;</span><br><span class="line">location / &#123;</span><br><span class="line">proxy_pass http://backend;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当前网站有2个实例部署在IIS中，siteA IP 127.0.0.1:92, siteB IP 127.0.0.1:93。siteA和siteB都只有一个index.html页面。<br>代码如下:</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span><span class="tag">&lt;<span class="name">html</span>&gt;</span><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>Nginx Sample<span class="tag">&lt;/<span class="name">title</span>&gt;</span><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>This is site A<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">body</span>&gt;</span><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span><span class="tag">&lt;<span class="name">html</span>&gt;</span><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>Nginx Sample<span class="tag">&lt;/<span class="name">title</span>&gt;</span><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>This is site B<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">body</span>&gt;</span><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>Nginx服务器使用81端口。 我们希望实现的效果是当用户访问<br><a target="_blank" rel="noopener" href="http://127.0.0.1:81">http://127.0.0.1:81</a> 时<br>Nginx随机将请求转发到 <a target="_blank" rel="noopener" href="http://127.0.0.1:92">http://127.0.0.1:92</a> 或者 <a target="_blank" rel="noopener" href="http://127.0.0.1:93">http://127.0.0.1:93</a> 上</p>
+<p><img src="/2019/12/26/nginx/nginx-consul-2/siteab.png" alt="a"></p>
+<p>实现步骤a. 首先我们修改Nginx的配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">events &#123;</span><br><span class="line">worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line">http &#123;</span><br><span class="line">upstream 127.0.0.1</span><br><span class="line">&#123;</span><br><span class="line">server 127.0.0.1:91 weight=1;</span><br><span class="line">server 127.0.0.1:92 weight=1;</span><br><span class="line">&#125;</span><br><span class="line">server</span><br><span class="line">&#123;</span><br><span class="line">listen 81;</span><br><span class="line">server_name localhost;</span><br><span class="line">location / &#123;</span><br><span class="line">proxy_pass http://127.0.0.1;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在命令行启动NginX<br><img src="/2019/12/26/nginx/nginx-consul-2/nginx1.png" alt="a"></p>
+<p>打开浏览器，输入<a target="_blank" rel="noopener" href="http://127.0.0.1:81">http://127.0.0.1:81</a>, 反复按F5刷新， 网站内容在siteA和siteB之间切换，这说明负载均衡已经成功启用。<br><img src="/2019/12/26/nginx/nginx-consul-2/siteabc.gif" alt="a"></p>
+<h3 id="Consul"><a href="#Consul" class="headerlink" title="Consul"></a>Consul</h3><h4 id="什么是Consul"><a href="#什么是Consul" class="headerlink" title="什么是Consul"></a>什么是Consul</h4><p>Consul是一款用高性能服务注册/服务健康检查组件</p>
+<h4 id="Consul安装"><a href="#Consul安装" class="headerlink" title="Consul安装"></a>Consul安装</h4><p>我们可以从官网(<a target="_blank" rel="noopener" href="https://www.consul.io/downloads.html">https://www.consul.io/downloads.html</a>) 中对应版本的32位或64位程序。下载之后就是一个可执行文件consul.exe</p>
+<h4 id="如何启动Consul"><a href="#如何启动Consul" class="headerlink" title="如何启动Consul"></a>如何启动Consul</h4><p>使用命令consul agent -dev, consul就会已开发模式启动（开发模式不会启用持久化，程序关闭后所有配置会丢失）</p>
+<h4 id="Consul服务后台"><a href="#Consul服务后台" class="headerlink" title="Consul服务后台"></a>Consul服务后台</h4><p>Consul服务启动之后，我们可以访问，<a target="_blank" rel="noopener" href="http://localhost:8500">http://localhost:8500</a> 来访问Consul的管理后台，界面如下。<br><img src="/2019/12/26/nginx/nginx-consul-2/65831-20180414221845184-1028038944.png" alt="a"><br>在这个管理后台中可以查看Consul注册的所有服务和所有主机节点。</p>
+<h4 id="注册服务"><a href="#注册服务" class="headerlink" title="注册服务"></a>注册服务</h4><p>Consul服务启动之后，我们可以调用一些相应的Api来注册服务(相关Api列表 <a target="_blank" rel="noopener" href="https://www.consul.io/api/index.html）">https://www.consul.io/api/index.html）</a></p>
+<h4 id="继续我们的实例"><a href="#继续我们的实例" class="headerlink" title="继续我们的实例"></a>继续我们的实例</h4><p>现在我们尝试将之前的siteA, siteB注册到Consul中。</p>
+<p>a. 首先这里我们去下载一个Curl程序（ <a target="_blank" rel="noopener" href="https://curl.haxx.se/">https://curl.haxx.se/</a> ） 来调用Api(这里可以用POSTMAN代替)</p>
+<p>b. 创建2个json文件siteA.json, siteB.json。其内容如下<br>siteA.json</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;ID&quot;:&quot;webA&quot;,</span><br><span class="line">    &quot;Name&quot;:&quot;web&quot;,</span><br><span class="line">    &quot;Tags&quot;:[],</span><br><span class="line">    &quot;Address&quot;:&quot;127.0.0.1&quot;,</span><br><span class="line">    &quot;Port&quot;:92,</span><br><span class="line">    &quot;EnableTagOverride&quot;:false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>siteB.json</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;ID&quot;:&quot;webB&quot;,</span><br><span class="line">    &quot;Name&quot;:&quot;web&quot;,</span><br><span class="line">    &quot;Tags&quot;:[],</span><br><span class="line">    &quot;Address&quot;:&quot;127.0.0.1&quot;,</span><br><span class="line">    &quot;Port&quot;:93,</span><br><span class="line">    &quot;EnableTagOverride&quot;:false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的Name就是服务名称，ID就是该服务的一个实例ID。</p>
+<p>使用curl调用注册服务Api，将siteA和siteB注册到Consul中</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">curl --request PUT --data @siteA.json http://localhost:8500/v1/agent/service/register</span><br><span class="line">curl --request PUT --data @siteB.json http://localhost:8500/v1/agent/service/register</span><br></pre></td></tr></table></figure>
+
+<p>回到Consul管理页面，我们会发现服务列表中会出现一个名为web的服务，这个服务有2个实例<br><img src="/2019/12/26/nginx/nginx-consul-2/ddddd.png" alt="a"><br>如果看到以上结果，就说明2个Web服务实例注册成功了。</p>
+<h4 id="添加服务健康检查"><a href="#添加服务健康检查" class="headerlink" title="添加服务健康检查"></a>添加服务健康检查</h4><p>将服务注册到Consul之后，得到的第一个好处就是可以借助Consul对每个服务实例进行健康检查。</p>
+<h4 id="继续修改我们的实例"><a href="#继续修改我们的实例" class="headerlink" title="继续修改我们的实例"></a>继续修改我们的实例</h4><p>关闭之前打开的Consul服务，新开一个命令行窗口，使用consul agent -dev重新开启一个新的Consul服务</p>
+<p>在siteA和siteB网站目录中，分别添加一个healthcheck.html文件，其内容如下</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">title</span>&gt;</span>Nginx Sample<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>This is health check page<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>修改之前的siteA.json和siteB.json</p>
+<p>siteA.json</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;ID&quot;:&quot;webA&quot;,</span><br><span class="line">    &quot;Name&quot;:&quot;web&quot;,</span><br><span class="line">    &quot;Tags&quot;:[],</span><br><span class="line">    &quot;Address&quot;:&quot;127.0.0.1&quot;,</span><br><span class="line">    &quot;Port&quot;:92,</span><br><span class="line">    &quot;Checks&quot;:[&#123;</span><br><span class="line">        &quot;http&quot;:&quot;http://127.0.0.1:92/healthcheck.html&quot;,</span><br><span class="line">        &quot;interval&quot;:&quot;5s&quot;</span><br><span class="line">    &#125;],</span><br><span class="line">    &quot;EnableTagOverride&quot;:false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>siteB.json</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;ID&quot;:&quot;webB&quot;,</span><br><span class="line">   &quot;Name&quot;:&quot;web&quot;,</span><br><span class="line">    &quot;Tags&quot;:[],</span><br><span class="line">    &quot;Address&quot;:&quot;127.0.0.1&quot;,</span><br><span class="line">    &quot;Port&quot;:93,</span><br><span class="line">    &quot;Checks&quot;:[&#123;</span><br><span class="line">        &quot;http&quot;:&quot;http://127.0.0.1:93/healthcheck.html&quot;,</span><br><span class="line">        &quot;interval&quot;:&quot;5s&quot;</span><br><span class="line">    &#125;],</span><br><span class="line">    &quot;EnableTagOverride&quot;:false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重新使用curl调用注册服务Api, 将siteA和siteB注册到Consul中</p>
+<p>打开siteA目录，将healthcheck.html改名为healthcheck1.html（这个操作相当于模拟siteA所在的服务器崩溃, consul请求不到healthcheck.html文件了）</p>
+<p>回到Consul管理界面，我们看一下结果，它会显示webA检查失败<br><img src="/2019/12/26/nginx/nginx-consul-2/65831-20180414222735648-762322917.png" alt="a"></p>
+<p>将healthcheck1.html改名会healthcheck.html, 等待5秒后，返回consul界面中，webA已经变回检测通过状态。</p>
+<h3 id="Consul-Template"><a href="#Consul-Template" class="headerlink" title="Consul Template"></a>Consul Template</h3><h4 id="什么是Consul-Template"><a href="#什么是Consul-Template" class="headerlink" title="什么是Consul Template"></a>什么是Consul Template</h4><p>Consul Template是Consul的一个扩展组件，可以读取Consul中的服务配置，根据指定模板生成不同的配置文件。</p>
+<p>所以这里我们就可以组合使用Consul, Consul Template来动态生成Nginx的配置文件, 并自动重启Nginx。</p>
+<h4 id="安装Consul-Template"><a href="#安装Consul-Template" class="headerlink" title="安装Consul Template"></a>安装Consul Template</h4><p>我们可以从官网（<a target="_blank" rel="noopener" href="https://releases.hashicorp.com/consul-template）">https://releases.hashicorp.com/consul-template）</a><br>中下载consul-template.exe</p>
+<h4 id="启动Consul-Template"><a href="#启动Consul-Template" class="headerlink" title="启动Consul Template"></a>启动Consul Template</h4><p>consul-template -consul-addr 127.0.0.1:8500 -template “./2.tpl:./conf/nginx.conf:nginx -s reload”</p>
+<p>这里-consul-addr参数是指定consul服务的地址, -template是指定consul template使用的模板，生成的新文件地址，以及生成新文件之后的执行的命令。</p>
+<h4 id="继续我们的案例"><a href="#继续我们的案例" class="headerlink" title="继续我们的案例"></a>继续我们的案例</h4><p>现在我们添加一个新的siteC, ip为127.0.0.1:94, siteC中也只有index.html和healthcheck.html2个文件</p>
+<p>a. 创建2.tpl, 文件内容如下, 这里使用的是consul-template的模板语法（相应语法介绍可以查看<a target="_blank" rel="noopener" href="https://github.com/hashicorp/consul-template）">https://github.com/hashicorp/consul-template）</a></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">events &#123;</span><br><span class="line">    worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">   upstream 127.0.0.1&#123;</span><br><span class="line">        &#123;&#123; range service &quot;web&quot; &#125;&#125;</span><br><span class="line">    server &#123;&#123; .Address &#125;&#125;:&#123;&#123; .Port &#125;&#125; weight=1;&#123;&#123; end &#125;&#125; </span><br><span class="line">    &#125;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen       81;</span><br><span class="line">        server_name  localhost;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">           proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用命令 启动consul-template</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">consul-template -consul-addr 127.0.0.1:8500 -template &quot;2.tpl:conf/nginx.conf:nginx -s reload&quot;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;ID&quot;:&quot;webC&quot;,</span><br><span class="line">    &quot;Name&quot;:&quot;web&quot;,</span><br><span class="line">    &quot;Tags&quot;:[],</span><br><span class="line">    &quot;Address&quot;:&quot;127.0.0.1&quot;,</span><br><span class="line">    &quot;Port&quot;:94,</span><br><span class="line">    &quot;Checks&quot;:[&#123;</span><br><span class="line">        &quot;http&quot;:&quot;http://127.0.0.1:94/healthcheck.html&quot;,</span><br><span class="line">        &quot;interval&quot;:&quot;5s&quot;</span><br><span class="line">    &#125;],</span><br><span class="line">    &quot;EnableTagOverride&quot;:false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>打开浏览器，输入<a target="_blank" rel="noopener" href="http://localhost:81">http://localhost:81</a>, 反复按F5刷新，你会发现siteC已经加入到了Nginx负载均衡配置中。<br><img src="/2019/12/26/nginx/nginx-consul-2/65831-20180414223157442-1873910755.gif" alt="a"><br>然后我们进行一个测试，我们将siteA的healthcheck.html重命名为healthcheck1.html</p>
+<p>回到刚才页面中继续按F5刷新，我们会发现现在只显示siteB和siteC的内容了，这是因为siteA已经被consul认定为不健康的服务，所以consul-template重新生成Nginx的配置文件，将siteA中配置文件中抹除，并重新启动了Nginx。<br><img src="/2019/12/26/nginx/nginx-consul-2/65831-20180414223222806-2097252779.gif" alt="a"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">Guo</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://guochen2.github.io/2019/12/26/nginx/nginx-consul-2/">https://guochen2.github.io/2019/12/26/nginx/nginx-consul-2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/consul/">consul</a><a class="post-meta__tags" href="/tags/nginx/">nginx</a></div><div class="post_share"><div class="social-share" data-image="/img/main/consul.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/01/07/python/python-tensorflow-1/"><img class="prev-cover" src="/img/main/tensorflow.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">tensorflow部分命令</div></div></a></div><div class="next-post pull-right"><a href="/2019/12/26/nginx/nginx-consul-1/"><img class="next-cover" src="/img/main/consul.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">nginx+consul+consul-template</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2019/12/26/nginx/nginx-consul-1/" title="nginx+consul+consul-template"><img class="cover" src="/img/main/consul.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-26</div><div class="title">nginx+consul+consul-template</div></div></a></div><div><a href="/2020/04/13/netcore/netcore集成consul配置中心/" title="netcore集成consul配置中心"><img class="cover" src="/img/main/netcore.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-04-13</div><div class="title">netcore集成consul配置中心</div></div></a></div><div><a href="/2020/02/17/consul/consul集群与多数据中心/" title="consul集群与多数据中心"><img class="cover" src="/img/main/consul.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-02-17</div><div class="title">consul集群与多数据中心</div></div></a></div><div><a href="/2020/02/17/java/springbootadmin结合consul/" title="spring-boot-admin结合consul实现动态client监控"><img class="cover" src="/img/main/springcloud.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-02-17</div><div class="title">spring-boot-admin结合consul实现动态client监控</div></div></a></div><div><a href="/2020/02/15/java/spring-cloud使用consul作为配置中心和注册中心/" title="spring-cloud使用consul作为配置中心和注册中心"><img class="cover" src="/img/main/springcloud.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-02-15</div><div class="title">spring-cloud使用consul作为配置中心和注册中心</div></div></a></div><div><a href="/2019/12/26/nginx/nginx-常用指令/" title="nginx常用指令"><img class="cover" src="/img/main/nginx.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-26</div><div class="title">nginx常用指令</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Guo</div><div class="author-info__description">爱直至成伤</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">38</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">32</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">14</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/guochen2"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/guochen2" target="_blank" title=""><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:c.cg@foxmail.com" target="_blank" title=""><i class="fas fa-envelope"></i></a><a class="social-icon" href="/atom.xml" target="_blank" title=""><i class="fas fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>Announcement</span></div><div class="announcement_content">感谢访问本站，若喜欢请收藏 ^_^</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%90%AD%E5%BB%BA%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E5%92%8C%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">搭建负载均衡和服务发现服务的目的</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Nginx%E5%AE%89%E8%A3%85"><span class="toc-number"></span> <span class="toc-text">Nginx安装</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Nginx%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">Nginx的配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">常见问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Consul"><span class="toc-number"></span> <span class="toc-text">Consul</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFConsul"><span class="toc-number">1.</span> <span class="toc-text">什么是Consul</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Consul%E5%AE%89%E8%A3%85"><span class="toc-number">2.</span> <span class="toc-text">Consul安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%90%AF%E5%8A%A8Consul"><span class="toc-number">3.</span> <span class="toc-text">如何启动Consul</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Consul%E6%9C%8D%E5%8A%A1%E5%90%8E%E5%8F%B0"><span class="toc-number">4.</span> <span class="toc-text">Consul服务后台</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C%E6%9C%8D%E5%8A%A1"><span class="toc-number">5.</span> <span class="toc-text">注册服务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%A7%E7%BB%AD%E6%88%91%E4%BB%AC%E7%9A%84%E5%AE%9E%E4%BE%8B"><span class="toc-number">6.</span> <span class="toc-text">继续我们的实例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E6%9C%8D%E5%8A%A1%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="toc-number">7.</span> <span class="toc-text">添加服务健康检查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%A7%E7%BB%AD%E4%BF%AE%E6%94%B9%E6%88%91%E4%BB%AC%E7%9A%84%E5%AE%9E%E4%BE%8B"><span class="toc-number">8.</span> <span class="toc-text">继续修改我们的实例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Consul-Template"><span class="toc-number"></span> <span class="toc-text">Consul Template</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFConsul-Template"><span class="toc-number">1.</span> <span class="toc-text">什么是Consul Template</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%89%E8%A3%85Consul-Template"><span class="toc-number">2.</span> <span class="toc-text">安装Consul Template</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8Consul-Template"><span class="toc-number">3.</span> <span class="toc-text">启动Consul Template</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%A7%E7%BB%AD%E6%88%91%E4%BB%AC%E7%9A%84%E6%A1%88%E4%BE%8B"><span class="toc-number">4.</span> <span class="toc-text">继续我们的案例</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2020/06/19/other/vscode+Remotessh/" title="vscode远程ssh服务器"><img src="/img/main/vscode.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="vscode远程ssh服务器"/></a><div class="content"><a class="title" href="/2020/06/19/other/vscode+Remotessh/" title="vscode远程ssh服务器">vscode远程ssh服务器</a><time datetime="2020-06-19T08:50:29.000Z" title="Created 2020-06-19 16:50:29">2020-06-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/04/13/linux/%E5%88%9B%E5%BB%BAca%E8%AF%81%E4%B9%A6/" title="创建ca证书"><img src="/img/main/linux.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="创建ca证书"/></a><div class="content"><a class="title" href="/2020/04/13/linux/%E5%88%9B%E5%BB%BAca%E8%AF%81%E4%B9%A6/" title="创建ca证书">创建ca证书</a><time datetime="2020-04-13T13:21:40.000Z" title="Created 2020-04-13 21:21:40">2020-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/04/13/docker/%E9%83%A8%E7%BD%B2docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93harbor/" title="部署docker私有仓库harbor"><img src="/img/main/harbor.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="部署docker私有仓库harbor"/></a><div class="content"><a class="title" href="/2020/04/13/docker/%E9%83%A8%E7%BD%B2docker%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93harbor/" title="部署docker私有仓库harbor">部署docker私有仓库harbor</a><time datetime="2020-04-13T13:12:04.000Z" title="Created 2020-04-13 21:12:04">2020-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/04/13/netcore/netcore%E9%9B%86%E6%88%90consul%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83/" title="netcore集成consul配置中心"><img src="/img/main/netcore.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="netcore集成consul配置中心"/></a><div class="content"><a class="title" href="/2020/04/13/netcore/netcore%E9%9B%86%E6%88%90consul%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83/" title="netcore集成consul配置中心">netcore集成consul配置中心</a><time datetime="2020-04-13T12:19:05.000Z" title="Created 2020-04-13 20:19:05">2020-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/02/17/consul/consul%E9%9B%86%E7%BE%A4%E4%B8%8E%E5%A4%9A%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83/" title="consul集群与多数据中心"><img src="/img/main/consul.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="consul集群与多数据中心"/></a><div class="content"><a class="title" href="/2020/02/17/consul/consul%E9%9B%86%E7%BE%A4%E4%B8%8E%E5%A4%9A%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83/" title="consul集群与多数据中心">consul集群与多数据中心</a><time datetime="2020-02-17T09:48:26.000Z" title="Created 2020-02-17 17:48:26">2020-02-17</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Guo</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="Switch Between Traditional Chinese And Simplified Chinese">简</button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">Local search</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '6S9bBAMLWjygg8ud7r7xEWs8-gzGzoHsz',
+      appKey: 'blnbRcVszk4VlQMR1m676KUq',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'en',
+      recordIP: true,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: true,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
