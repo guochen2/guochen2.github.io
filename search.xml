@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>Net6绘图组件System.Drawing.Common异常</title>
+      <link href="/2021/11/13/netcore/net6%E7%BB%98%E5%9B%BE%E7%BB%84%E4%BB%B6System.Drawing.Common%E5%BC%82%E5%B8%B8/"/>
+      <url>/2021/11/13/netcore/net6%E7%BB%98%E5%9B%BE%E7%BB%84%E4%BB%B6System.Drawing.Common%E5%BC%82%E5%B8%B8/</url>
+      
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="\assets\js\Meting.min.js"></script><h4 id="Net6里使用System-Drawing-Common在linux下出现异常"><a href="#Net6里使用System-Drawing-Common在linux下出现异常" class="headerlink" title="Net6里使用System.Drawing.Common在linux下出现异常"></a>Net6里使用System.Drawing.Common在linux下出现异常</h4><p>异常内容如下</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">System.TypeInitializationException : The type initializer for &#x27;Gdip&#x27; threw an exception.</span><br><span class="line">      ---- System.PlatformNotSupportedException : System.Drawing.Common is not supported on non-Windows platforms. See https://aka.ms/systemdrawingnonwindows for more information.</span><br><span class="line">      Stack Trace:</span><br><span class="line">           at System.Drawing.SafeNativeMethods.Gdip.GdipCreateBitmapFromFile(String filename, IntPtr&amp; bitmap)</span><br><span class="line">        /_/src/libraries/System.Drawing.Common/src/System/Drawing/Bitmap.cs(42,0): at System.Drawing.Bitmap..ctor(String filename, Boolean useIcm)</span><br><span class="line">        /_/src/libraries/System.Drawing.Common/src/System/Drawing/Bitmap.cs(25,0): at System.Drawing.Bitmap..ctor(String filename)</span><br><span class="line">        /_/src/libraries/System.Resources.ResourceManager/tests/ResourceManagerTests.cs(270,0): at System.Resources.Tests.ResourceManagerTests.EnglishImageResourceData()+MoveNext()</span><br><span class="line">        /_/src/libraries/System.Linq/src/System/Linq/Select.cs(136,0): at System.Linq.Enumerable.SelectEnumerableIterator`2.MoveNext()</span><br><span class="line">        ----- Inner Stack Trace -----</span><br><span class="line">        /_/src/libraries/System.Drawing.Common/src/System/Drawing/LibraryResolver.cs(31,0): at System.Drawing.LibraryResolver.EnsureRegistered()</span><br><span class="line">        /_/src/libraries/System.Drawing.Common/src/System/Drawing/GdiplusNative.Unix.cs(65,0): at System.Drawing.SafeNativeMethods.Gdip.PlatformInitialize()</span><br><span class="line">        /_/src/libraries/System.Drawing.Common/src/System/Drawing/Gdiplus.cs(27,0): at System.Drawing.SafeNativeMethods.Gdip..cctor()</span><br></pre></td></tr></table></figure><p><a href="https://docs.microsoft.com/zh-cn/dotnet/core/compatibility/core-libraries/6.0/system-drawing-common-windows-only">官方解释</a></p><h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><h5 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h5><p>在最后生成的***.runtimeconfig.json里增加配置</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;runtimeOptions&quot;: &#123;</span><br><span class="line">    &quot;configProperties&quot;: &#123;</span><br><span class="line">      &quot;System.Drawing.EnableUnixSupport&quot;: true,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h5 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h5><p>项目文件里添加</p><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;ItemGroup&gt;</span><br><span class="line">      &lt;RuntimeHostConfigurationOption Include=&quot;System.Drawing.EnableUnixSupport&quot; Value=&quot;true&quot; /&gt;</span><br><span class="line">&lt;/ItemGroup&gt;</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> c# </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> netcore </tag>
+            
+            <tag> net6 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>NetFramework4.5项目迁移至NetCore5.0</title>
       <link href="/2021/09/03/netcore/Net/"/>
       <url>/2021/09/03/netcore/Net/</url>
